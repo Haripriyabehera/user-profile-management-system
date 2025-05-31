@@ -7,6 +7,9 @@ const userController = {};
 //  Get Profile
 userController.getProfile = async (req, res) => {
     try {
+        if (req.currentUser._id !== req.params.id && req.currentUser.role !== 'admin') {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
         const user = await User.findById(req.params.id).select('-password');
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -22,6 +25,10 @@ userController.updateProfile = async (req, res) => {
     const errors = validationResult(req); 
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
+    }
+
+    if (req.currentUser._id !== req.params.id && req.currentUser.role !== 'admin') {
+        return res.status(403).json({ message: "Unauthorized access" });
     }
 
     const { firstName, middleName, lastName, email, password, department } = req.body;
